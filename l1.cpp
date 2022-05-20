@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include <iostream>
 
 //  g++ -std=c++11 -o hello Helloworld.cpp -lncursesw
 
@@ -6,44 +7,51 @@ int main(){
   WINDOW *win1, *win2, *win3;
 
   initscr();
-  resize_term(30,100);
+  resize_term(30,100); // 윈도우의 크기는 30, 100
   start_color();
-  init_pair(1, COLOR_GREEN, COLOR_BLACK);
-  init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(1, COLOR_GREEN, COLOR_BLACK); // 색깔 설정 ( 1번 : 초록 , 검정)
+  init_pair(2, COLOR_YELLOW, COLOR_BLACK); // 색깔 설정  (2번 : 노랑, 검정)
 
-  border('|','|', '-', '-', '+','+','+','+');
+  border('|','|', '-', '-', '+','+','+','+'); // 게임 전체 테두리
   mvprintw(2,2, "SNAKE GAME");
   refresh();
   getch();
 
   // Tutorial
   // level 1 Lets grow (Grow Item Only)
-  // win1 = newwin(22, 60, 4, 10);
-  // wbkgd(win1, '*');
-  //
-  // wborder(win1, '|','|', '-', '-', '+','+','+','+');
-  // wrefresh(win1);
-  // //
+  win1 = newwin(22, 60, 4, 10);
+  wbkgd(win1, '*');
+
+  wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  mvwprintw(win1, 0, 2, "Lets Grow");
+  if (win1[0, 1] == '-'){ // #### error 특정 좌표를 조건으로 삼고싶은데, == 로는 전달 받을 수 없는 것 같음
+    mvwprintw(win1, 1, 2, "Lets Start");
+  }
+  wrefresh(win1);
+
+
   //
   // // level 2 be smaller (poison Item Only)
   // win1 = newwin(22, 60, 4, 10);
   // wbkgd(win1, '*');
-  //
   // wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  // mvwprintw(win1, 0, 2, "Be Smaller");
   // wrefresh(win1);
 
 
-  // level 3 use the gate (Gate Only)
-  win1 = newwin(22, 60, 4, 10);
-  wbkgd(win1, '*');
-  mvwprintw(win1, 8, 1, "1111111          11111111111111111111111111111111111111111");
-  // 중간에 스페이스로 비우면 이빠진 모양도 만들 수 있음.
-  wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  // // level 3 use the gate (Gate Only)
+  // win1 = newwin(22, 60, 4, 10);
+  // wbkgd(win1, '*');
+  // wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  // mvwprintw(win1, 0, 2, "Use The Gate");
+  // mvwprintw(win1, 8, 1, "1111111111111111111111111111111111111111111111111111111111");
+  // // 중간에 스페이스로 비우면 이빠진 모양도 만들 수 있음.
+
   wrefresh(win1);
 
 // -Tutorial End
 
-  
+
   win2 = newwin(8, 10, 5, 80);
   wbkgd(win2, COLOR_PAIR(2));
   wattron(win2, COLOR_PAIR(2));
