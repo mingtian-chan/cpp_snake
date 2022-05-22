@@ -31,7 +31,7 @@ typedef struct itemNode{
   struct  itemNode *next;
   struct  itemNode *prev;
   const char* item;
-  double itemTime = 0.0;
+  int itemTime = 0;
 }itemNode;
 
 static struct termios initial_settings, new_settings;
@@ -190,12 +190,15 @@ public :
   int gateend_x = 10; //not wall
   int gateend_y = 15; //gate에서 나오는 부분이 벽이 아닌 경우
 
+  int length = 0;
+
   Game(){
      //tetris
     initscr();
     resize_term(60,50);
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK);
+    curs_set(0);
 
     border('|','|','-','-','+','+','+','+');
     attron(COLOR_PAIR(1));
@@ -232,6 +235,8 @@ public :
 
     mvwprintw(win1,gatestart_y,gatestart_x,"@"); //gate start
     mvwprintw(win1,gateend_y, gateend_x,"@"); //gate end
+
+
 
 
   }
@@ -329,7 +334,7 @@ public :
 
     wrefresh(win1);
 
-    usleep(80000); //fast -> sleep
+    usleep(80000); //fast -> sleep 0.08s
 
     // end = clock();
     // double result = end-start;
@@ -339,6 +344,8 @@ public :
   }
 
 itemNode* makeItem(itemNode *headernode, const char* item) {
+
+  length += 1;
 
   itemNode *itemnode;
   itemnode = (itemNode *)malloc(sizeof(itemNode));
@@ -401,6 +408,9 @@ itemNode* deleteItem(itemNode *headernode, itemNode *itemnode) {
 
   const char* itemcopy = itemnode -> item;
 
+  int dx = itemnode -> x;
+  int dy = itemnode -> y;
+
   //printf("head->x = %d\n", head->x);
 
   if(itemnode -> prev != NULL){ //not first node
@@ -424,7 +434,7 @@ itemNode* deleteItem(itemNode *headernode, itemNode *itemnode) {
     free(itemnode);
   }
 
-  makeItem(headernode,  itemcopy);
+  mvwprintw(win1,dy,dx,"0");
 
   return headernode;
 }
@@ -494,14 +504,13 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
 
 };
 
-
-
 int main(){
 
   Node *head = NULL;
   itemNode *ihead = NULL;
 
   int change = 0;
+  int count = 0;
 
   head = insertfirstNode(head,"4",initx+2,inity); //초기 뱀을 insertfirstNode로 만들기
   head = insertfirstNode(head,"4",initx+1,inity);
@@ -512,44 +521,51 @@ int main(){
 
   init_keyboard();
 
-  clock_t start, finish;
-  double duration;
-
   ihead =  game.makeItem(ihead,"5"); //init?
   ihead =  game.makeItem(ihead,"6");
   game.printItem(ihead);
+
+  game.length = 0;
 
   while(1){ //무한루프, 종료 조건이 만들어진가면 !종료조건으로 넣을 예
 
     itemNode *itemhead = ihead;
 
-    while(itemhead != NULL){
-      if(itemhead -> itemTime >= 1){ //timeover
-        itemNode * inode  =  game.finditem(itemhead, itemhead-> x, itemhead -> y);
-        const char* data = inode -> item;
-        ihead =  game.deleteItem(ihead,inode);
-        ihead =  game.makeItem(ihead, data);
-        itemhead = itemhead->next;
-      }else{
+    while(itemhead != NULL&&game.length <= 2){ //game.length  한번에 생길 수 있는 node의 갯수를 제한
+      if(count < 60){
         if(head->x == itemhead-> x&&head->y ==  itemhead -> y){
           itemNode * inode  =  game.finditem(itemhead, itemhead-> x, itemhead -> y);
           const char* data = inode -> item;
           ihead =  game.deleteItem(ihead,inode);
+
+          if(data == "5"){ //minus
+            head = deleteNode(head);
+          }else if(data == "6"){
+            head = insertNode(head,"4");
+          }
+
           ihead =  game.makeItem(ihead, data);
           itemhead = itemhead->next;
         }else{
           itemhead = itemhead->next;
         }
+      }else{
+
+        itemNode * inode  =  game.finditem(itemhead, itemhead-> x, itemhead -> y);
+        const char* data = inode -> item;
+        ihead =  game.deleteItem(ihead,inode);
+        ihead =  game.makeItem(ihead, data);
+        itemhead = itemhead->next;
+
       }
+
       game.printItem(ihead);
     }
-
-    start = clock(); //play time
 
     if(_kbhit()){ //키보드 입력이 들어온다면
       int input = _getch(); //입력값을 int로 받기
       game.snake_point(input); //int 받은 값을 snake_point로 전달해서 방향 변환
-      usleep(500); //헤더 방향을 바꾸는데 들어가는 0.5 tick
+      usleep(5000); //헤더 방향을 바꾸는데 들어가는 0.05 tick
     }else{
       game.snake_move(head); //키보드 입력값이 없을 경우 계속 움직이기
 
@@ -558,17 +574,13 @@ int main(){
       }
     }
 
-    finish = clock();
-    duration = (double)(finish - start) / CLOCKS_PER_SEC;
-    duration += 0.08; //snake move
-
-    //itemNode *itemhead2 = ihead;
-
-    while(itemhead2 != NULL){
-      itemhead2 -> itemTime += duration;
-      itemhead2 = itemhead -> next;
+    if(count >= 60){
+      count = 0;
+      game.length = 0;
+    }else{
+      count += 1;
     }
-    printf("itemTime = %f\n", itemhead -> itemTime);
+
   }
   return 0;
 }
