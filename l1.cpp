@@ -17,17 +17,14 @@ int main(){
   refresh();
   getch();
 
-  // Tutorial
-  // level 1 Lets grow (Grow Item Only)
-  win1 = newwin(22, 60, 4, 10);
-  wbkgd(win1, '*');
-
-  wborder(win1, '|','|', '-', '-', '+','+','+','+');
-  mvwprintw(win1, 0, 2, "Lets Grow");
-  if (win1[0, 1] == '-'){ // #### error 특정 좌표를 조건으로 삼고싶은데, == 로는 전달 받을 수 없는 것 같음
-    mvwprintw(win1, 1, 2, "Lets Start");
-  }
-  wrefresh(win1);
+  // // Tutorial
+  // // level 1 Lets grow (Grow Item Only)
+  // win1 = newwin(22, 60, 4, 10);
+  // wbkgd(win1, '*');
+  //
+  // wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  // mvwprintw(win1, 0, 2, "Lets Grow");
+  // wrefresh(win1);
 
 
   //
@@ -39,13 +36,13 @@ int main(){
   // wrefresh(win1);
 
 
-  // // level 3 use the gate (Gate Only)
-  // win1 = newwin(22, 60, 4, 10);
-  // wbkgd(win1, '*');
-  // wborder(win1, '|','|', '-', '-', '+','+','+','+');
-  // mvwprintw(win1, 0, 2, "Use The Gate");
-  // mvwprintw(win1, 8, 1, "1111111111111111111111111111111111111111111111111111111111");
-  // // 중간에 스페이스로 비우면 이빠진 모양도 만들 수 있음.
+  // level 3 use the gate (Gate Only)
+  win1 = newwin(22, 60, 4, 10);
+  wbkgd(win1, '*');
+  wborder(win1, '|','|', '-', '-', '+','+','+','+');
+  mvwprintw(win1, 0, 2, "Use The Gate");
+  mvwprintw(win1, 8, 0, "011111111111111111111111111111111111111111111111111111111110");
+  // 중간에 스페이스로 비우면 이빠진 모양도 만들 수 있음.
 
   wrefresh(win1);
 

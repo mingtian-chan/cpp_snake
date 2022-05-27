@@ -1,21 +1,20 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+  public int pos[2]; // public 으로 배열 만듬
 
-int[] Item_Pos_Generator() {
-   srand(time(NULL));
-   int item_x, item_y;
+  void Item_Pos_Generator() {
+    srand(time(NULL));
+    int pos_x, pos_y;
 
-   item_x = rand() % 22 + 1; // x좌표 생성기
-   item_y = rand() % 60 + 1; // y좌표 생성기
-   int[] arr = new int[2];
-
-
-  return (item_x, item_y);
- }
+    pos_x = rand() % 22 + 1; // x좌표 생성기
+    pos_y = rand() % 60 + 1; // y좌표 생성기
+    int pos[2] = {pos_x, pos_y};
+}
 
   int main() {
     std::cout<< "im here" << std::endl;
-    std::cout<< arr << std::endl;
-    std::cout<< "im out" << std::endl;
+    Item_Pos_Generator();
+    std::cout << pos[2] << std::endl;
+    std::cout << "im out" << std::endl;
   }
