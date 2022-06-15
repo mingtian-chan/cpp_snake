@@ -1,6 +1,7 @@
 // #include <locale.h> // 이거 해도 유니코드가 실행이 안됨.
 #include <ncurses.h>
 #include <iostream>
+#include <Map.h> // Map header 포함
 
 //  g++ -std=c++11 -o hello Helloworld.cpp -lncursesw
 
@@ -56,6 +57,8 @@ int main(){
   wattron(win1, COLOR_PAIR(3));
   wborder(win1, '|','|', '-', '-', '+','+','+','+');
   mvwprintw(win1, 0, 2, "welcome to snake_world");
+
+
   //
   // mvwprintw(win1, 5, 0, "■                            ■                             ■"); // 이거 locale.h 불러와도 ~V 로 출력되고, 출력이 완됨..
   // mvwprintw(win1, 6, 0, "■                            ■                             ■");
@@ -112,6 +115,8 @@ int main(){
   delwin(win2);
   delwin(win3);
   endwin();
+
+  
 
 
   return 0;
