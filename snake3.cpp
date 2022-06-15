@@ -288,7 +288,7 @@ public :
 
     wattroff(win3, COLOR_PAIR(2));
 
-    mvwprintw(win2,0,13,"SUCCESS!");
+    mvwprintw(win3,0,13,"SUCCESS!");
 
 
     level2 = newwin(60,50,0,0);
@@ -479,7 +479,7 @@ public :
     gateend_x = gate_truex[end];
     gateend_y = gate_truey[end];
 
-    map1[gatestart_y][gatestart_x] = "$"; //?????
+    map1[gatestart_y][gatestart_x] = "$";
     map1[gateend_y][gateend_x] = "@";
 
     mvwprintw(win1,gatestart_y,gatestart_x,"$"); //gate start
@@ -768,7 +768,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
 
     //std::cout << gatestart_x << std::endl;
 
-    if(gatestart_x == 0||gatestart_x == 20||gatestart_y == 0||gatestart_y == 21){ //end wall이 벽에 있는 경우
+    if(gatestart_x == 0||gatestart_x == 20||gatestart_y == 0||gatestart_y == 21){
       if(gateend_x == 0){ //끝나는 게이트가 x=0 방향으로 열려있어서 오른쪽으로 진출해야 하는 경우 left -> right
 
         initx = gateend_x; //초기값을 게이트 방향으로 옮겨서, head가 통과할 수 있도록 지정
@@ -809,7 +809,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
         head->x = gateend_x;
         head->y = gateend_y;
       }
-  }else{ //end = not wall //start부분이 벽에 붙어있지 않은경우 (아직 미구현)
+  }else{
 
     for(int i = 0; i<20; i++){
       for(int j = 0; j<19; j++){
