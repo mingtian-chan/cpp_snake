@@ -214,17 +214,10 @@ public :
     ////////fail!/////////////////////
 
     ///score
-
     score  = newwin(6,30,4,30);
     wborder(score,'|','|','-','-','+','+','+','+');
     mvwprintw(score,0,4,"score");
 
-     //update wprintw etc...
-
-    // //wal/
-    // for(int i = 0; i < 10; i++){
-    //   mvwprintw(win1,wally[i],wallx[i],"1");
-    // }
     wrefresh(score);
 
 
