@@ -8,6 +8,7 @@
 #include <sys/select.h>
 #include <termios.h>
 #include <iostream>
+#include <string>
 
 #define Max 5 //?
 
@@ -106,6 +107,7 @@ class Game{
 public :
   WINDOW *win1;
   WINDOW *win2;
+  WINDOW *score;
 
   int i = 0;
   int j = 0;
@@ -211,6 +213,7 @@ public :
   int gatestart_y; //#4-8
 
   int length = 0;
+  int score_int = 0;
 
   Game(){
      //tetris
@@ -251,6 +254,12 @@ public :
 
     ////////fail!/////////////////////
 
+    ///score
+
+    score  = newwin(6,14,4,30);
+    wborder(score,'|','|','-','-','+','+','+','+');
+    mvwprintw(score,0,4,"score");
+
      //update wprintw etc...
 
     // //wal/
@@ -259,9 +268,19 @@ public :
     // }
 
     wrefresh(win1);
+    wrefresh(score);
 
   }
   //snake
+
+  void score_print(){
+
+    const char* score_char = to_string(score_int).c_str();
+
+    mvwprintw(score,2,4,score_char);
+    wrefresh(score);
+
+  }
 
   void fail(){
 
@@ -368,6 +387,7 @@ public :
     free(plusnode); //마지막 node의 메모리를 반납한다.
 
     lengthNode--;
+    score_int--;
 
     return headernode; //headernode를 return 해서 연결되도록 한다.
   }
@@ -390,6 +410,7 @@ public :
     plusnode->data = num; //data를 넣어준다.
 
     lengthNode++;
+    score_int++;
 
     return headernode; //header를 return 해서 연결해준다.
   }
@@ -598,7 +619,10 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
     int walltrue_x = 0;
 
     Node* head = headernode;
-    if(gatestart_x == 0||gatestart_x == 29||gatestart_y== 0||gatestart_y == 39){ //end wall이 벽에 있는 경우
+
+    //std::cout << gatestart_x << std::endl;
+
+    if(gatestart_x == 0||gatestart_x == 20||gatestart_y == 0||gatestart_y == 21){ //end wall이 벽에 있는 경우
       if(gateend_x == 0){ //끝나는 게이트가 x=0 방향으로 열려있어서 오른쪽으로 진출해야 하는 경우 left -> right
 
         initx = gateend_x; //초기값을 게이트 방향으로 옮겨서, head가 통과할 수 있도록 지정
@@ -608,7 +632,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
         head->y = gateend_y;
 
         keyhead = 2; //방향을 오른쪽을 변경
-      }else if(gateend_x == 29){ //끝나는 게이트가 x = 오른쪽 방향으로 열려있어서 right ->left 방향으로 왼쪽으로 빠져나가야 하는 경우
+      }else if(gateend_x == 20){ //끝나는 게이트가 x = 오른쪽 방향으로 열려있어서 right ->left 방향으로 왼쪽으로 빠져나가야 하는 경우
         initx = gateend_x;
         inity = gateend_y;
 
@@ -624,7 +648,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
         head->y = gateend_y;
 
         keyhead = 4; //head 방향을 아래쪽으로 바꿔줌
-      }else if(gateend_y == 39){ //끝나는 게이트가 y = 아래쪽으로 열려있어서 위 방향으로 빠져나가야 하는 경우 down -> up
+      }else if(gateend_y == 21){ //끝나는 게이트가 y = 아래쪽으로 열려있어서 위 방향으로 빠져나가야 하는 경우 down -> up
         initx = gateend_x;
         inity = gateend_y;
 
@@ -689,6 +713,8 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
       }
     }
   }
+
+    score_int++;
     return head;
 }
 };
@@ -729,6 +755,8 @@ int main(){
     itemNode *itemhead = ihead;
     Node *lenghead = head;
     Node *wellhead = head;
+
+    game.score_print();
 
     //fail?
 
