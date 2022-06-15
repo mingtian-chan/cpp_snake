@@ -257,22 +257,25 @@ public :
     // wrefresh(score);
   }
 
-  void grow_mission_print(){
-    if (grow_score_int >= 3){
+  void grow_mission_print(){ 
+    int grow_mission_goal = 3;
+    if (grow_score_int >= grow_mission_goal){
       mvwprintw(mission,2,3,"Grow   : (O)/3");
     }
     wrefresh(mission);
   }
 
   void pois_mission_print(){
-    if (pois_score_int >= 2) {
+    int pois_mission_goal = 2;
+    if (pois_score_int >= pois_mission_goal) {
       mvwprintw(mission,3,3,"Poison : (O)/2");
     }
     wrefresh(mission);
   }
 
   void gate_mission_print(){
-        if (gate_score_int >= 1) {
+    int gate_mission_goal = 1;
+        if (gate_score_int >= gate_mission_goal) {
       mvwprintw(mission,4,3,"Gate   : (O)/1");
     }
     wrefresh(mission);
