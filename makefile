@@ -1,2 +1,2 @@
 all:
-	g++ -std=c++11 -o l1 l1.cpp -lncursesw && ./l1
+	g++ -std=c++11 -o snake snake_non_linked_wall.cpp -lncursesw && ./snake
