@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <cstdlib>
 #include <time.h>
 #include <string>
@@ -7,10 +8,13 @@
 #include <sys/select.h>
 #include <termios.h>
 #include <iostream>
-#define Max 5
+#include <string>
+
+#define Max 5 //?
 
 struct termios oldterm, new_term;
 int ch_read;
+
 
 void set_stdin(void);
 void reset_stdin(void);
@@ -94,74 +98,17 @@ int _getch()
     return ch;
 }
 
-int initx = 13; //초기에 뱀의 head가 위치하는 x값
-int inity = 20; //초기에 뱀의 head가 위치하는 y값
-
-Node* insertfirstNode(Node *headernode,const char *num,int x, int y){ //뱀의 크기를 늘릴때, 앞부분을 늘리기 위한 함수, 초기 뱀을 설정하기 위해 만든 함수이다.
-
-  Node *plusnode;
-  plusnode = (Node *)malloc(sizeof(Node)); //node의 메모리 배정
-
-  plusnode->x = x; //새로 배정된 node의 x 좌표값 설정
-  plusnode->y = y; //새로 배정된 node의 y 좌표값 설정
-
-  plusnode->prev = NULL; //일단, 초기에는 연결이 이뤄지지 않았으므로 이전 node를 가리키는 prev 정보를 null로 둔다.
-
-  plusnode->data = num; //해당하는 const char * 정보를 data에 넣는다.
-
-  if(headernode == NULL){ //header가 없으면, 처음 node라는 의미이므로, header로 설정해준다.
-    headernode = plusnode;
-  }else{
-    plusnode->next = headernode; //기존의 header node를 새로운 header가 될 plusnode의 다음으로 순서를 미루기 위해 next로 연결한다.
-    headernode->prev = plusnode; //기존의 header node 앞에 새로운 header가 될 plusnode가 와야 하므로, 다음과 같이 설정한다.
-    headernode = plusnode; //새로운 plusnode를 headernode로 변경 설정한다.
-
-  }
-  return headernode; //headernode를 return 해서 headernode를 연결할 수 있도록 해야한다.
-}
-
-Node* deleteNode(Node *headernode){ //삭제연산, 줄어드는 아이템을 먹었을때 발생한다.
-
-  Node *plusnode = headernode;
-  Node *plusnode2 = headernode;
-
-  while(plusnode -> next != NULL){
-    plusnode = plusnode->next; //꼬리 부분을 줄어들게 해야하므로, header를 가리키고 있는 node를 계속 끝으로 이동해준다.
-  }
-
-  plusnode2 = plusnode -> prev; //plusnode2가 plusnode의 이전 node를 가리키게 한다.
-
-  plusnode2 -> next = NULL; //마지막 node를 삭제해야 하므로, plusnode2의 연결을 끊는다.
-
-  free(plusnode); //마지막 node의 메모리를 반납한다.
+int initx = 10; //초기에 뱀의 head가 위치하는 x값
+int inity = 10; //초기에 뱀의 head가 위치하는 y값
 
 
-  return headernode; //headernode를 return 해서 연결되도록 한다.
-}
-
-Node* insertNode(Node *headernode,const char *num){ //증가하는 아이템을 먹었을때를 해결하기 위한 insert 연산이다.
-  Node *plus = headernode;
-
-  Node *plusnode;
-  plusnode = (Node *)malloc(sizeof(Node)); //새로 추가되는 plus node의 메모리를 배정한다.
-
-  while(plus->next != NULL){
-    plus = plus->next; //끝 부분에 추가를 해야 하기 때문에 끝으로 계속 이동한다.
-  }
-
-  plusnode->prev = plus; //새로 만든 node의 앞 연결 node를 원래 tailnode로 설정
-  plus->next = plusnode; //원래 tail이었던 node뒤에 새로 만든 추가 node를 설정
-  plusnode->x = (plus -> x)-1; //뒤로 와야 하기 때문에, x값을 하나 적게 설정
-  plusnode->y = (plus -> y); //y값은 그대로 설정
-  plusnode->next = NULL; //마지막 node가 되었으므로, next는 null로 설정해준다.
-  plusnode->data = num; //data를 넣어준다.
-
-  return headernode; //header를 return 해서 연결해준다.
-}
 
 class Game{
 public :
   WINDOW *win1;
+  WINDOW *win2;
+  WINDOW *score;
+
   int i = 0;
   int j = 0;
 
@@ -169,6 +116,7 @@ public :
   int prekeyhead = keyhead;
   int TrueCounter = 1;
   double times = 0.0;
+  int lengthNode = 0;
 
   int x_item = 18; //임의로 지정한 플러스 아이템의 위치 좌표
   int y_item = 20;
@@ -205,6 +153,35 @@ public :
   int wallx[10] = {7,7,7,7,7,7,8,9,10,11}; //walll
   int wally[10] = {20,21,22,23,24,25,25,25,25,25};
 
+  const char* map1[21][22] = {
+    {"2", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "2"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1"},
+    {"2", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "2"},
+  };
+
+  int gate_truex[100]{};
+  int gate_truey[100]{};
+
+  int randnum = 0;
+
   // int gateend_x = 7; //#4-1
   // int gateend_y = 22; //#4-1
   //
@@ -229,13 +206,16 @@ public :
   // int gatestart_x = 7; //#4-6
   // int gatestart_y = 25; //#4-6
 
-  int gateend_x = 9; //#4-8
-  int gateend_y = 25; //#4-8
+  int gateend_x; //#4-8
+  int gateend_y; //#4-8
 
-  int gatestart_x = 7; //#4-8
-  int gatestart_y = 20; //#4-8
+  int gatestart_x; //#4-8
+  int gatestart_y; //#4-8
 
   int length = 0;
+  int grow_score_int = 0;
+  int pois_score_int = 0;
+  int gate_score_int = 0;
 
   Game(){
      //tetris
@@ -246,55 +226,200 @@ public :
     curs_set(0);
 
     border('|','|','-','-','+','+','+','+');
-    attron(COLOR_PAIR(1));
-    mvprintw(1,1,"Welcome To the Tetris Game");
-    attroff(COLOR_PAIR(1));
+
     refresh();
     //getch();
 
-    win1 = newwin(40,30,3,3); //size, x, y
+    win1 = newwin(21,22,4,4); //size, x, y
+    //init_pair(2, COLOR_GREEN, COLOR_BLACK);
 
-    wborder(win1,'|','|','-','-','+','+','+','+');
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    //wattron(win1, COLOR_PAIR(2));
 
-    wattron(win1, COLOR_PAIR(2));
-    wbkgd(win1,'0');
-    wattroff(win1, COLOR_PAIR(2));
-
-
-    mvwprintw(win1,0,5,"Tetris");
-
-    //mvwprintw(win1,15,0,"2");
-
-    //nodelay(win1,TRUE); //non-blocking
-    //cbreak();
-
-    wrefresh(win1); //update wprintw etc...
-    //getch();
-
-    //mvwprintw(win1,6,5,"="); //minus
-    //mvwprintw(win1,14,15,"=");
-
-    mvwprintw(win1,y_item,x_item,"#"); //plus
-    mvwprintw(win1,my_item,mx_item,"="); //minus
-
-    //임시 wall
-
-    //wal/
-    for(int i = 0; i < 10; i++){
-      mvwprintw(win1,wally[i],wallx[i],"1");
+    for(int i = 0; i<21; i++){
+      for(int j = 0; j<22; j++){
+        mvwprintw(win1,i,j,map1[i][j]);
+      }
     }
 
-    mvwprintw(win1,gatestart_y,gatestart_x,"@"); //gate start
+    ////////fail!/////////////////////
+    win2 = newwin(40,30,3,3); //size, x, y
+
+    wborder(win2,'|','|','-','-','+','+','+','+');
+    //init_pair(2, COLOR_GREEN, COLOR_BLACK);
+
+    wattron(win2, COLOR_PAIR(2));
+    wbkgd(win2,'0');
+    wattroff(win2, COLOR_PAIR(2));
+
+
+    mvwprintw(win2,0,5,"FAIL");
+
+    ////////fail!/////////////////////
+
+    ///score
+
+    score  = newwin(6,14,4,30);
+    wborder(score,'|','|','-','-','+','+','+','+');
+    mvwprintw(score,0,4,"score");
+
+     //update wprintw etc...
+
+    // //wal/
+    // for(int i = 0; i < 10; i++){
+    //   mvwprintw(win1,wally[i],wallx[i],"1");
+    // }
+
+    wrefresh(win1);
+    wrefresh(score);
+
+  }
+  //snake
+
+  void score_print(){
+
+    const char* grow_score_char = to_string(grow_score_int).c_str();
+    const char* pois_score_char = to_string(pois_score_int).c_str();
+    const char* gate_score_char = to_string(gate_score_int).c_str();
+
+    mvwprintw(score,2,4,grow_score_char);
+    mvwprintw(score,3,4,pois_score_char);
+    mvwprintw(score,4,4,gate_score_char);
+
+    wrefresh(score);
+
+  }
+
+  void fail(){
+
+    //endwin?
+    //werase!
+    //werase(win1);
+
+    //wclear(win1);
+    //wrefresh(win2);
+
+    mvwprintw(win2,15,15,"fail!");
+    wrefresh(win2);
+    sleep(10);
+    //initscr()?
+
+  }
+
+  void set_gate_true(){
+
+    int n = 0;
+
+    gate_truex[100] = {};
+    gate_truey[100] = {};
+
+    for(int i = 0; i<22; i++){
+      for(int j = 0; j<21; j++){
+        if(map1[i][j] == "1"){
+          gate_truex[n] = j;
+          gate_truey[n] = i;
+          n++;
+          randnum++;
+        }
+        //mvwprintw(win1,i+1,j+1,map1[i][j]);
+      }
+    }
+  }
+
+  void set_gate_xy(){
+
+    int start;
+    int end;
+
+    srand(time(NULL));
+
+    start = rand() % randnum; // x좌표 생성기
+    end = rand() % randnum;
+
+    gatestart_x = gate_truex[start];
+    gatestart_y = gate_truey[start];
+
+
+    gateend_x = gate_truex[end];
+    gateend_y = gate_truey[end];
+
+    map1[gatestart_y][gatestart_x] = "$"; //?????
+    map1[gateend_y][gateend_x] = "@";
+
+    mvwprintw(win1,gatestart_y,gatestart_x,"$"); //gate start
     mvwprintw(win1,gateend_y, gateend_x,"@"); //gate end
+    wrefresh(win1);
 
 
+  }
+
+  Node* insertfirstNode(Node *headernode,const char *num,int x, int y){ //뱀의 크기를 늘릴때, 앞부분을 늘리기 위한 함수, 초기 뱀을 설정하기 위해 만든 함수이다.
+
+    Node *plusnode;
+    plusnode = (Node *)malloc(sizeof(Node));; //node의 메모리 배정
+
+    plusnode->x = x; //새로 배정된 node의 x 좌표값 설정
+    plusnode->y = y; //새로 배정된 node의 y 좌표값 설정
+
+    plusnode->prev = NULL; //일단, 초기에는 연결이 이뤄지지 않았으므로 이전 node를 가리키는 prev 정보를 null로 둔다.
+    plusnode->next = NULL;
+    plusnode->data = num; //해당하는 const char * 정보를 data에 넣는다.
+
+    if(headernode == NULL){ //header가 없으면, 처음 node라는 의미이므로, header로 설정해준다.
+      headernode = plusnode;
+    }else{
+      plusnode->next = headernode; //기존의 header node를 새로운 header가 될 plusnode의 다음으로 순서를 미루기 위해 next로 연결한다.
+      headernode->prev = plusnode; //기존의 header node 앞에 새로운 header가 될 plusnode가 와야 하므로, 다음과 같이 설정한다.
+      headernode = plusnode; //새로운 plusnode를 headernode로 변경 설정한다.
+
+    }
+
+    lengthNode++;
+
+    return headernode; //headernode를 return 해서 headernode를 연결할 수 있도록 해야한다.
+  }
+
+  Node* deleteNode(Node *headernode){ //삭제연산, 줄어드는 아이템을 먹었을때 발생한다.
+
+    Node *plusnode = headernode;
+    Node *plusnode2 = headernode;
 
 
+    while(plusnode -> next != NULL){
+      plusnode = plusnode->next; //꼬리 부분을 줄어들게 해야하므로, header를 가리키고 있는 node를 계속 끝으로 이동해준다.
+    }
 
+    plusnode2 = plusnode -> prev; //plusnode2가 plusnode의 이전 node를 가리키게 한다.
+    plusnode2 -> next = NULL; //마지막 node를 삭제해야 하므로, plusnode2의 연결을 끊는다.
 
+    free(plusnode); //마지막 node의 메모리를 반납한다.
 
+    lengthNode--;
+    pois_score_int++;
 
+    return headernode; //headernode를 return 해서 연결되도록 한다.
+  }
+
+  Node* insertNode(Node *headernode,const char *num){ //증가하는 아이템을 먹었을때를 해결하기 위한 insert 연산이다.
+    Node *plus = headernode;
+
+    Node *plusnode;
+    plusnode = (Node *)malloc(sizeof(Node)); //새로 추가되는 plus node의 메모리를 배정한다.
+
+    while(plus->next != NULL){
+      plus = plus->next; //끝 부분에 추가를 해야 하기 때문에 끝으로 계속 이동한다.
+    }
+
+    plusnode->prev = plus; //새로 만든 node의 앞 연결 node를 원래 tailnode로 설정
+    plus->next = plusnode; //원래 tail이었던 node뒤에 새로 만든 추가 node를 설정
+    plusnode->x = (plus -> x)-1; //뒤로 와야 하기 때문에, x값을 하나 적게 설정
+    plusnode->y = (plus -> y); //y값은 그대로 설정
+    plusnode->next = NULL; //마지막 node가 되었으므로, next는 null로 설정해준다.
+    plusnode->data = num; //data를 넣어준다.
+
+    lengthNode++;
+    grow_score_int++;
+
+    return headernode; //header를 return 해서 연결해준다.
   }
 
   void snake_make(Node *headernode){ //초기에 생성된 스네이크 mvwprintw로 화면에 출력
@@ -337,12 +462,6 @@ public :
     }
 
     //실패조건 (아직 미구현)
-
-    // if((prekeyhead == 1&&keyhead == 2)||(prekeyhead == 2&&keyhead == 1)){
-    //   printf("Fail!\n");
-    // }else if((prekeyhead == 3&&keyhead == 4)||(prekeyhead == 4&&keyhead == 3)){
-    //   printf("Fail!\n");
-    // }
 
 }
 
@@ -401,6 +520,8 @@ public :
 
   }
 
+  //item
+
 itemNode* makeItem(itemNode *headernode, const char* item) {
 
   length += 1;
@@ -413,8 +534,8 @@ itemNode* makeItem(itemNode *headernode, const char* item) {
   //srand(time(NULL));
   int pos_x, pos_y;
 
-  pos_x = rand() % 29 + 1; // x좌표 생성기
-  pos_y = rand() % 39 + 1; // y좌표 생성기
+  pos_x = rand() % 19 + 1; // x좌표 생성기
+  pos_y = rand() % 20 + 1; // y좌표 생성기
 
   itemnode-> x = pos_x;
   itemnode-> y = pos_y;
@@ -450,7 +571,7 @@ void printItem(itemNode *itemnode){ //초기에 생성된 스네이크 mvwprintw
 
 }
 
-itemNode*  finditem(itemNode *headernode, int x, int y){
+itemNode* finditem(itemNode *headernode, int x, int y){
     itemNode *itemnode = headernode;
 
     while(itemnode-> x != x||itemnode-> y != y){
@@ -497,13 +618,18 @@ itemNode* deleteItem(itemNode *headernode, itemNode *itemnode) {
   return headernode;
 }
 
+//gate
+
 Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위한 move
 
     int walltrue_y = 0;
     int walltrue_x = 0;
 
     Node* head = headernode;
-    if(gatestart_x == 0||gatestart_x == 29||gatestart_y== 0||gatestart_y == 39){ //end wall이 벽에 있는 경우
+
+    //std::cout << gatestart_x << std::endl;
+
+    if(gatestart_x == 0||gatestart_x == 20||gatestart_y == 0||gatestart_y == 21){ //end wall이 벽에 있는 경우
       if(gateend_x == 0){ //끝나는 게이트가 x=0 방향으로 열려있어서 오른쪽으로 진출해야 하는 경우 left -> right
 
         initx = gateend_x; //초기값을 게이트 방향으로 옮겨서, head가 통과할 수 있도록 지정
@@ -513,7 +639,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
         head->y = gateend_y;
 
         keyhead = 2; //방향을 오른쪽을 변경
-      }else if(gateend_x == 29){ //끝나는 게이트가 x = 오른쪽 방향으로 열려있어서 right ->left 방향으로 왼쪽으로 빠져나가야 하는 경우
+      }else if(gateend_x == 20){ //끝나는 게이트가 x = 오른쪽 방향으로 열려있어서 right ->left 방향으로 왼쪽으로 빠져나가야 하는 경우
         initx = gateend_x;
         inity = gateend_y;
 
@@ -529,7 +655,7 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
         head->y = gateend_y;
 
         keyhead = 4; //head 방향을 아래쪽으로 바꿔줌
-      }else if(gateend_y == 39){ //끝나는 게이트가 y = 아래쪽으로 열려있어서 위 방향으로 빠져나가야 하는 경우 down -> up
+      }else if(gateend_y == 21){ //끝나는 게이트가 y = 아래쪽으로 열려있어서 위 방향으로 빠져나가야 하는 경우 down -> up
         initx = gateend_x;
         inity = gateend_y;
 
@@ -594,11 +720,17 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
       }
     }
   }
+
+    gate_score_int++;
     return head;
 }
 };
 
+//main
+
 int main(){
+
+  Game game;
 
   Node *head = NULL;
   itemNode *ihead = NULL;
@@ -607,28 +739,53 @@ int main(){
   int change = 0;
   int count = 0;
 
-  head = insertfirstNode(head,"4",initx+2,inity); //초기 뱀을 insertfirstNode로 만들기
-  head = insertfirstNode(head,"4",initx+1,inity);
-  head = insertfirstNode(head,"3",initx,inity);
+  head = game.insertfirstNode(head,"4",initx+2,inity); //초기 뱀을 insertfirstNode로 만들기
+  head = game.insertfirstNode(head,"4",initx+1,inity);
+  head = game.insertfirstNode(head,"3",initx,inity);
 
-  Game game;
+
   game.snake_make(head); //초기 뱀 print
 
   init_keyboard();
-
 
   ihead =  game.makeItem(ihead,"5"); //init?
   ihead =  game.makeItem(ihead,"6");
   game.printItem(ihead);
 
-
-
-
   game.length = 0;
+
+  game.set_gate_true();
+  game.set_gate_xy();
 
   while(1){ //무한루프, 종료 조건이 만들어진가면 !종료조건으로 넣을 예
 
     itemNode *itemhead = ihead;
+    Node *lenghead = head;
+    Node *wellhead = head;
+
+    game.score_print();
+
+    //fail?
+
+    if((game.prekeyhead == 1&&game.keyhead == 2)||(game.prekeyhead == 2&&game.keyhead == 1)){
+      game.fail();
+      break;
+    }else if((game.prekeyhead == 3&&game.keyhead == 4)||(game.prekeyhead == 4&&game.keyhead == 3)){
+      game.fail();
+      break;
+    }
+
+    if(game.lengthNode < 3){
+      game.fail();
+      break;
+    }
+
+    //std::cout << lengthNode << std::endl;
+
+    if(game.map1[wellhead->y][wellhead->x] == "1"){
+      game.fail();
+      break;
+    }
 
     while(itemhead != NULL&&game.length <= 2){ //game.length  한번에 생길 수 있는 node의 갯수를 제한
       if(count < 60){
@@ -638,9 +795,9 @@ int main(){
           ihead =  game.deleteItem(ihead,inode);
 
           if(data == "5"){ //minus
-            head = deleteNode(head);
+            head = game.deleteNode(head);
           }else if(data == "6"){
-            head = insertNode(head,"4");
+            head = game.insertNode(head,"4");
           }
 
           ihead =  game.makeItem(ihead, data);
