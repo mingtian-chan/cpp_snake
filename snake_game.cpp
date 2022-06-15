@@ -107,6 +107,7 @@ class Game{
 public :
   WINDOW *win1;
   WINDOW *win2;
+  WINDOW *win3;
   WINDOW *score;
   WINDOW *mission;
 
@@ -171,7 +172,7 @@ public :
   int pois_score_int = 0;
   int gate_score_int = 0;
 
-  
+
 
   Game(){
      //tetris
@@ -199,22 +200,37 @@ public :
 
     wrefresh(win1);
     ////////fail!/////////////////////
-    win2 = newwin(40,30,3,3); //size, x, y
+
+
+    win2 = newwin(60,50,0,0); //size, x, y
 
     wborder(win2,'|','|','-','-','+','+','+','+');
     //init_pair(2, COLOR_GREEN, COLOR_BLACK);
 
     wattron(win2, COLOR_PAIR(2));
-    wbkgd(win2,'0');
+
     wattroff(win2, COLOR_PAIR(2));
 
 
-    mvwprintw(win2,0,5,"FAIL");
+    mvwprintw(win2,0,13,"FAIL!");
 
     ////////fail!/////////////////////
 
+    win3 = newwin(60,50,0,0); //size, x, y
+
+    wborder(win3,'|','|','-','-','+','+','+','+');
+    //init_pair(2, COLOR_GREEN, COLOR_BLACK);
+
+    wattron(win3, COLOR_PAIR(2));
+
+    wattroff(win3, COLOR_PAIR(2));
+
+
+    mvwprintw(win3,0,13,"SUCCESS!");
+
+
     ///score
-    score  = newwin(6,30,4,30);
+    score  = newwin(6,20,4,28);
     wborder(score,'|','|','-','-','+','+','+','+');
     mvwprintw(score,0,4,"score");
 
@@ -222,13 +238,13 @@ public :
 
 
     /// mission
-    mission = newwin(6, 30, 16,30);
+    mission = newwin(6, 20, 16,28);
     wborder(mission,'|','|','-','-','+','+','+','+');
     mvwprintw(mission,0,4,"mission");
     mvwprintw(mission,2,3,"Grow   : ( )/3");
     mvwprintw(mission,3,3,"poison : ( )/2");
-    mvwprintw(mission,4,3,"Gate   : ( )/1"); 
-    
+    mvwprintw(mission,4,3,"Gate   : ( )/1");
+
     wrefresh(mission);
 
   }
@@ -257,25 +273,22 @@ public :
     // wrefresh(score);
   }
 
-  void grow_mission_print(){ 
-    int grow_mission_goal = 3;
-    if (grow_score_int >= grow_mission_goal){
+  void grow_mission_print(){
+    if (grow_score_int >= 3){
       mvwprintw(mission,2,3,"Grow   : (O)/3");
     }
     wrefresh(mission);
   }
 
   void pois_mission_print(){
-    int pois_mission_goal = 2;
-    if (pois_score_int >= pois_mission_goal) {
+    if (pois_score_int >= 2) {
       mvwprintw(mission,3,3,"Poison : (O)/2");
     }
     wrefresh(mission);
   }
 
   void gate_mission_print(){
-    int gate_mission_goal = 1;
-        if (gate_score_int >= gate_mission_goal) {
+        if (gate_score_int >= 1) {
       mvwprintw(mission,4,3,"Gate   : (O)/1");
     }
     wrefresh(mission);
@@ -283,15 +296,16 @@ public :
 
   void fail(){
 
-    //endwin?
-    //werase!
-    //werase(win1);
-
-    //wclear(win1);
-    //wrefresh(win2);
-
-    mvwprintw(win2,15,15,"fail!");
+    mvwprintw(win2,20,20,"fail!");
     wrefresh(win2);
+    sleep(10);
+
+  }
+
+  void success(){
+
+    mvwprintw(win3,20,20,"success!");
+    wrefresh(win3);
     sleep(10);
     //initscr()?
 
@@ -304,8 +318,8 @@ public :
     gate_truex[100] = {};
     gate_truey[100] = {};
 
-    for(int i = 0; i<22; i++){
-      for(int j = 0; j<21; j++){
+    for(int i = 0; i<20; i++){
+      for(int j = 0; j<19; j++){
         if(map1[i][j] == "1"){
           gate_truex[n] = j;
           gate_truey[n] = i;
@@ -382,6 +396,8 @@ public :
 
     plusnode2 = plusnode -> prev; //plusnode2가 plusnode의 이전 node를 가리키게 한다.
     plusnode2 -> next = NULL; //마지막 node를 삭제해야 하므로, plusnode2의 연결을 끊는다.
+
+    mvwprintw(win1,plusnode->y,plusnode->x,"0");
 
     free(plusnode); //마지막 node의 메모리를 반납한다.
 
@@ -522,12 +538,12 @@ itemNode* makeItem(itemNode *headernode, const char* item) {
   itemnode = (itemNode *)malloc(sizeof(itemNode));
   itemnode-> next = NULL;
   itemnode-> prev = NULL;
-
-  //srand(time(NULL));
   int pos_x, pos_y;
 
-  pos_x = rand() % 19 + 1; // x좌표 생성기
-  pos_y = rand() % 20 + 1; // y좌표 생성기
+  //srand(time(NULL));
+
+  pos_x = rand() % 18 + 1; // x좌표 생성기
+  pos_y = rand() % 19 + 1; // y좌표 생성기
 
   itemnode-> x = pos_x;
   itemnode-> y = pos_y;
@@ -714,9 +730,19 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
   }
 
     //score_int++;
+
+
+
     gate_score_int++;
     return head;
 }
+
+void gateinit(){
+  mvwprintw(win1,gatestart_y,gatestart_x,"$");
+  mvwprintw(win1,gateend_y,gateend_x,"@");
+  wrefresh(win1);
+}
+
 };
 
 //main
@@ -763,6 +789,10 @@ int main(){
     game.grow_mission_print();
     game.pois_mission_print();
     game.gate_mission_print();
+
+    if((game.grow_score_int >= 3)&&(game.pois_score_int >= 2)&&(game.gate_score_int >= 1)){
+      game.success();
+    }
 
     //fail?
 
@@ -827,6 +857,8 @@ int main(){
       if(head->x == game.gatestart_x&&head->y == game.gatestart_y){ //gate를 만나면
         head = game.gateMove(head); //gateMove를 이용해서 gate조건에 따른 move 실행
       }
+
+      game.gateinit();
     }
 
     if(count >= 60){
