@@ -124,31 +124,6 @@ public :
   int mx_item = 5; //임의로 지정한 마이너스 아이템의 위치 좌표
   int my_item = 10;
 
-  // int gatestart_x = 20; //gate 시작이 벽에 있는 경우
-  // int gatestart_y = 0;
-
-  // int gatestart_x = 20; //not wall = 아직 구현하지 못하였습니다.
-  // int gatestart_y = 30;
-
-  // 게이트 나오는 부분이 벽인 경우
-
-  // int gateend_x= 0; //left
-  // int gateend_y = 15;
-
-  // int gateend_x= 29; //right
-  // int gateend_y = 15;
-
-  // int gateend_x = 10; //up
-  // int gateend_y = 0;
-  //
-  // int gateend_x = 10; //down
-  // int gateend_y = 39; //최대 window크기 끝부분
-
-  // int gateend_x = 10; //not wall, free
-  // int gateend_y = 15; //gate에서 나오는 부분이 벽이 아닌 경우
-
-  // int gateend_x = 20; //not wall, free
-  // int gateend_y = 28; //gate에서 나오는 부분이 벽이 아닌 경우
 
   int wallx[10] = {7,7,7,7,7,7,8,9,10,11}; //walll
   int wally[10] = {20,21,22,23,24,25,25,25,25,25};
@@ -182,30 +157,6 @@ public :
 
   int randnum = 0;
 
-  // int gateend_x = 7; //#4-1
-  // int gateend_y = 22; //#4-1
-  //
-  // int gatestart_x = 7; //#4-1
-  // int gatestart_y = 24; //#4-1
-
-  // int gateend_x = 7; //#4-2, 4-4
-  // int gateend_y = 22; //#4-2, 4-4
-  //
-  // int gatestart_x = 10; //#4-2, 4-4
-  // int gatestart_y = 25; //#4-2, 4-4
-
-  // int gateend_x = 9; //#4-5, 4-7
-  // int gateend_y = 25; //#4-5, 4-7
-  //
-  // int gatestart_x = 7; //#4-5, 4-7
-  // int gatestart_y = 23; //#4-5, 4-7
-
-  // int gateend_x = 9; //#4-6,
-  // int gateend_y = 25; //#4-6
-  //
-  // int gatestart_x = 7; //#4-6
-  // int gatestart_y = 25; //#4-6
-
   int gateend_x; //#4-8
   int gateend_y; //#4-8
 
@@ -213,7 +164,11 @@ public :
   int gatestart_y; //#4-8
 
   int length = 0;
-  int score_int = 0;
+  //int score_int = 0;
+
+  int grow_score_int = 0;
+  int pois_score_int = 0;
+  int gate_score_int = 0;
 
   Game(){
      //tetris
@@ -273,13 +228,28 @@ public :
   }
   //snake
 
-  void score_print(){
+  void gate_score_print(){
+    const char* gate_score_char = to_string(gate_score_int).c_str();
 
-    const char* score_char = to_string(score_int).c_str();
-
-    mvwprintw(score,2,4,score_char);
+    mvwprintw(score,4,4,gate_score_char);
     wrefresh(score);
 
+    // const char* score_char = to_string(score_int).c_str();
+    //
+    // mvwprintw(score,2,4,score_char);
+    // wrefresh(score);
+  }
+
+  void grow_score_print(){
+    const char* grow_score_char = to_string(grow_score_int).c_str();
+    mvwprintw(score,2,4,grow_score_char);
+    wrefresh(score);
+  }
+
+  void pois_score_print(){
+    const char* pois_score_char = to_string(pois_score_int).c_str();
+    mvwprintw(score,3,4,pois_score_char);
+    wrefresh(score);
   }
 
   void fail(){
@@ -387,7 +357,8 @@ public :
     free(plusnode); //마지막 node의 메모리를 반납한다.
 
     lengthNode--;
-    score_int--;
+    //score_int--;
+    pois_score_int++;
 
     return headernode; //headernode를 return 해서 연결되도록 한다.
   }
@@ -410,21 +381,20 @@ public :
     plusnode->data = num; //data를 넣어준다.
 
     lengthNode++;
-    score_int++;
+    //score_int++;
+
+    grow_score_int++;
 
     return headernode; //header를 return 해서 연결해준다.
   }
 
   void snake_make(Node *headernode){ //초기에 생성된 스네이크 mvwprintw로 화면에 출력
 
-    int i = 0;
-
     Node* temp = headernode;
 
     while(temp != NULL){ //마지막 노드 나올때까지
       mvwprintw(win1,temp->y,temp->x,(temp->data)); //타고 가면서 print 하기
       temp = temp->next;
-      i++;
     }
 
     wrefresh(win1);
@@ -714,7 +684,8 @@ Node* gateMove(Node *headernode){ //gate를 지날때 header를 바꿔주기 위
     }
   }
 
-    score_int++;
+    //score_int++;
+    gate_score_int++;
     return head;
 }
 };
@@ -756,7 +727,10 @@ int main(){
     Node *lenghead = head;
     Node *wellhead = head;
 
-    game.score_print();
+    game.gate_score_print();
+    game.grow_score_print();
+    game.pois_score_print();
+
 
     //fail?
 
